@@ -1,0 +1,127 @@
+---
+title: "Final Proj"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(readxl)
+library(dplyr)
+library(readr)
+library(plotly)
+library(ggplot2)
+library(tigris)
+library(tidyverse)
+library(tigris)
+library(sf)
+library(tmap)
+library(tmaptools)
+library(htmltools)
+library(janitor)
+library(rmapshaper)
+library(here)
+library(tidyverse) 
+library(janitor) 
+library(readxl) 
+library(scales)
+library(lubridate)
+library(ggthemes)
+library(esquisse)
+library(DT)
+library(kableExtra)
+
+complaints <- readRDS("complaints.rds") %>% 
+  clean_names()
+ 
+
+```
+
+Page 1
+=======================================================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+worstmonths <- complaints %>% 
+  group_by(mm_yy_sent_to_company) %>% 
+  summarise(numcomplaints = n()) 
+
+ggplot(worstmonths, aes(x = mm_yy_sent_to_company, y = numcomplaints, group = 1)) +
+  geom_line(color = "red") +
+  scale_x_discrete(name = "Month")+
+  scale_y_continuous(name = "Number of Complaints")+
+  labs(
+    title = "Complaints per Month"
+  )
+
+```
+
+### Chart B
+
+```{r}
+
+mostcommonproblems <- complaints %>% 
+  group_by(sub_product) %>% 
+  summarise(numcomplaints = n()) %>% 
+  arrange(desc(numcomplaints))%>% 
+  filter(numcomplaints > 3400)
+
+mostcommonproblems %>% 
+  kbl()  %>% 
+  kable_styling()
+
+```
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Chart C
+
+```{r}
+
+complaintsbycompanytop10 <- complaints %>% 
+  group_by(company) %>% 
+  summarise(numcomplaints = n()) %>% 
+  arrange(desc(numcomplaints)) %>% 
+  filter(numcomplaints > 3800)
+
+complaintsbycompanytop10 %>% 
+  kbl()  %>% 
+  kable_styling()
+
+```
+
+### Chart D
+
+```{r}
+
+results <- complaints %>% 
+  group_by(company_response_to_consumer) %>% 
+  summarise(totals = n()) 
+
+ggplot(results, aes(x = company_response_to_consumer, y = totals))+
+  geom_col(color ="orange", fill = "black")+ coord_flip() + 
+  scale_y_continuous(name = "Total", breaks = seq(0, 400000, 100000))+
+  scale_x_discrete(name = "Result of Complaint")+
+  labs(title = "Results of Complaints")
+
+```
+
+Page 2
+=======================================================================
+### About
+This database explored financial product and service complaints to see how companies responded to consumers between March of 2020 and January of 2021. This included only complaints sent to companies for response. Complaints data are rarely considered accurate. Company and market size can inflate numbers along with customers who overreact and file false complaints. Further, other customers may have reason to file a complaint but choose not too. 
+
+My first chart looks at the amount of complaints per month. You can see a clear rise with the start of the pandemic up until December of 2020. The drop in January could be a result of an incomplete month. Chart B looks at the most common issues that customers had and Chart C looks at the companies that had the most complaints. Finally, Chart D looks at the results of the complaints according to the companies' responses to their customers. Most of them were resolved with an explanation which is a good sign, and one piece of data did not have a resolution.
+
